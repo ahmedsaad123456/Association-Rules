@@ -93,53 +93,58 @@ def generate_vertical_data_problem1(df, sup_count):
 def generate_frequent_itemsets(filtered_vertical_data, sup_count):
 
     # variable to store number of combinations
-
-    max_k = 2
-    isCompleted = True
-
-    # Create a copy of the filtered vertical data 
-    filtered_vertical_data_copy = filtered_vertical_data.copy()
-
-    # Loop until no more combinations can be generated
-    while isCompleted:
-
-        # Generate combinations of items based on the current maximum size max_k
-        all_items = list(filtered_vertical_data.keys())
-
-        # Generate combinations of size max_k
-
-        itemsets = combinations(all_items, max_k)
-
-
-        # Create a new map to store the item combinations and their common transactions
-
-        new_filtered_vertical_data = {}
-
-        # For each item combination, calculate the intersection of transactions
-
-        for itemset in itemsets:
-            
-            # Fetch the transaction sets for each item in the combination
-            transaction_sets = [filtered_vertical_data[item] for item in itemset]
-            
-            # Find the intersection of all transaction sets (common transactions)
-            common_transactions = set.intersection(*transaction_sets)
         
-            # If the combination greater than support count, add it to the new map
+    max_k = 2  
 
-            if len(common_transactions) >= sup_count:
-                new_filtered_vertical_data[itemset] = common_transactions
 
-        # Check if we reached zero length, and if so, restore the previous state
-        if len(new_filtered_vertical_data) == 0:
-            filtered_vertical_data = filtered_vertical_data_copy
-            isCompleted = False
+    # Continue generating itemsets until no more frequent sets are found
+    while True:
+
+        prev_frequent_itemsets = list(filtered_vertical_data.keys())
+
+
+        # Stop if there are no more frequent itemsets
+        if len(prev_frequent_itemsets) < 2:
+            # print("No more frequent itemsets. Stopping.")
             break
 
-        filtered_vertical_data_copy = new_filtered_vertical_data
-        
-        # Increase item set size for the next iteration
+        # Generate candidate itemsets of size max_k from previous (max_k-1) itemsets
+        new_filtered_vertical_data = {}
+
+        for a, b in combinations(prev_frequent_itemsets, 2):
+
+            # Ensure merging happens correctly
+            # Assuming `a` and `b` are two items to be merged
+            if isinstance(a, tuple) and isinstance(b, tuple):
+                # Merge and sort
+                merged_set = sorted(set(a) | set(b))  
+            else:
+                # If not tuples, keep them as is
+                merged_set = (a, b)  
+
+            # convert merged_set to a tuple
+            merged_set = tuple(merged_set)
+            
+            # Only merge sets that differ by one item
+            if len(merged_set) == max_k:
+
+                # Merge transaction sets from previous frequent itemsets
+                common_transactions = filtered_vertical_data[a] & filtered_vertical_data[b]
+
+
+                # Store only frequent itemsets
+                if len(common_transactions) >= sup_count:
+                    new_filtered_vertical_data[merged_set] = common_transactions
+
+        # Stop if no new frequent itemsets are found
+        if not new_filtered_vertical_data:
+            break
+
+        # Update for the next iteration
+        filtered_vertical_data = new_filtered_vertical_data
         max_k += 1
+
+
 
     return filtered_vertical_data
 

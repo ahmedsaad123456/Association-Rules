@@ -31,7 +31,7 @@ class Problem1GUI:
         self.create_param_input(param_frame, "Percentage of Dataset (0 - 100):", "perc_entry")
 
         # Run Button
-        self.run_button = ttk.Button(main_frame, text="Run Apriori", command=self.run_apriori)
+        self.run_button = ttk.Button(main_frame, text="Run Algorithm", command=self.run_apriori)
         self.run_button.pack(pady=10)
 
         # Loading Indicator
